@@ -1,0 +1,64 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Simulation parameters
+time_step = 0.1  # Time step (ms)
+total_time = 100  # Total simulation time (ms)
+num_steps = int(total_time / time_step)  # Number of steps
+
+# Neuron parameters (LIF model)
+tau = 10  # Membrane time constant (ms)
+v_rest = -65  # Resting potential (mV)
+v_reset = -70  # Reset potential after a spike (mV)
+v_threshold = -50  # Spike threshold (mV)
+R = 100  # Membrane resistance (MΩ)
+
+# Input current (dynamic and noisy)
+input_current = 1.5 * (1 + np.sin(2 * np.pi * np.linspace(0, total_time, num_steps) / total_time)) \
+                + 0.2 * np.random.randn(num_steps)
+
+# Initialize variables
+v = v_rest  # Membrane potential
+voltage_trace = []  # To store membrane potential over time
+spike_times = []  # To store spike times
+
+# Simulation loop
+for t in range(num_steps):
+    time = t * time_step  # Current time (ms)
+
+    # Compute the change in membrane potential
+    dv = (v_rest - v + input_current[t] * R) / tau * time_step
+    v += dv
+
+    # Check for spike
+    if v >= v_threshold:
+        spike_times.append(time)  # Record spike time
+        v = v_reset  # Reset membrane potential
+
+    # Record membrane potential
+    voltage_trace.append(v)
+
+# Plot results
+time_vector = np.arange(0, total_time, time_step)
+
+# Plot membrane potential
+plt.figure(figsize=(12, 4))
+plt.plot(time_vector, voltage_trace, label='Membrane potential (mV)')
+plt.scatter([spike for spike in spike_times], [v_threshold] * len(spike_times), color='red', label='Spikes')
+plt.axhline(y=v_threshold, color='r', linestyle='--', label='Spike threshold')
+plt.xlabel('Time (ms)')
+plt.ylabel('Membrane potential (mV)')
+plt.title('Leaky Integrate-and-Fire Neuron with Noisy Input')
+plt.legend()
+plt.show()
+
+# Plot spike raster
+plt.figure(figsize=(8, 4))
+plt.eventplot(spike_times, lineoffsets=1, colors='b')
+plt.xlabel('Time (ms)')
+plt.title('Spike Times')
+plt.show()
+
+# Calculate firing rate
+firing_rate = len(spike_times) / (total_time / 1000)  # Spikes per second (Hz)
+print(f"Firing Rate: {firing_rate:.2f} Hz")
