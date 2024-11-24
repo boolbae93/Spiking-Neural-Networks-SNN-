@@ -21,7 +21,8 @@ v = v_rest  # Membrane potential
 voltage_trace = []  # To store membrane potential over time
 spike_times = []  # To store spike times
 
-# Simulation loop
+# Simulation loop:
+# For each time step, the membrane potential is updated, and spikes are detected.
 for t in range(num_steps):
     time = t * time_step  # Current time (ms)
 
@@ -29,13 +30,18 @@ for t in range(num_steps):
     dv = (v_rest - v + input_current * R) / tau * time_step
     v += dv
 
-    # Check for spike
+    # Check for spike:
+    # When the potential reaches the threshold, a spike is recorded, and the potential is reset.
     if v >= v_threshold:
         spike_times.append(time)  # Record spike time
         v = v_reset  # Reset membrane potential
 
     # Record membrane potential
     voltage_trace.append(v)
+
+# Visualization:
+# Voltage trace: Shows how the potential evolves over time.
+# Spike raster: Marks the times when spikes occur.
 
 # Plot results
 time_vector = np.arange(0, total_time, time_step)
